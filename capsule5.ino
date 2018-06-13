@@ -66,10 +66,18 @@ void loop() {
 
   if (sensorState == HIGH) {
     Serial.println (F("Unbroken"));
-    digitalWrite(LEDRED, 255);
-    digitalWrite(LEDBLUE, 255);
-    digitalWrite(LEDGREEN, 255);
+
+    result = sendRequest (F("studenthome.hku.nl"),
+                          F("/~sophie.vandersijp/kernmodule4/unbroken_insert.php?thingID=1&pillID=1"),
+                          response);
   }
+
+  //if (result == 1) {
+
+  digitalWrite(LEDRED, 255);
+  digitalWrite(LEDBLUE, 255);
+  digitalWrite(LEDGREEN, 255);
+
   if (sensorState == LOW) {
     Serial.println (F("Broken"));
   }
@@ -151,16 +159,17 @@ void loop() {
         String woTime = getBody(response);
         Serial.println(F("should I be worried"));
 
-        if (woTime == F("its WOTIME")) {
+        if (woTime == F("its GOTIME")) {
           woTimeFlag = true;
           Serial.println(F("worry"));
         }
 
         if (woTimeFlag) {
-
-          digitalWrite(LEDRED, 0);
-          digitalWrite(LEDBLUE, 255);
-          digitalWrite(LEDGREEN, 255);
+          if (sensorState == LOW) {
+            digitalWrite(LEDRED, 0);
+            digitalWrite(LEDBLUE, 255);
+            digitalWrite(LEDGREEN, 255);
+          }
 
           woTimeFlag = false;
         }
@@ -168,16 +177,19 @@ void loop() {
 
 
         //------------------------------------------------------------------------------------- pill has been taken
-        result = sendRequest (F("studenthome.hku.nl"),
-                              F("/~sophie.vandersijp/kernmodule4/unbroken_insert.php?thingID=1&pillID=1"),
-                              response);
-
-        if (result == 1) {
 
 
-          //sensorState = LOW;
+        if (sensorState == HIGH) {
 
-          if (sensorState == HIGH) {
+          result = sendRequest (F("studenthome.hku.nl"),
+                                F("/~sophie.vandersijp/kernmodule4/taken.php?thingID=1&pillID=1"),
+                                response);
+
+          if (result == 1) {
+
+
+            //sensorState = LOW;
+
 
             digitalWrite(LEDRED, 255);
             digitalWrite(LEDBLUE, 255);
@@ -191,6 +203,8 @@ void loop() {
       } // if result == 1
     } // if gotime flag
   } // if result == 1 / login
+
+
   //     } // if result == 1 / gotime
   //   } // end goTime loop
   // } // end login else loop
