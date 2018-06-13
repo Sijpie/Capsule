@@ -66,6 +66,9 @@ void loop() {
 
   if (sensorState == HIGH) {
     Serial.println (F("Unbroken"));
+    digitalWrite(LEDRED, 255);
+    digitalWrite(LEDBLUE, 255);
+    digitalWrite(LEDGREEN, 255);
   }
   if (sensorState == LOW) {
     Serial.println (F("Broken"));
@@ -75,123 +78,127 @@ void loop() {
 
   //------------------------------------------------------------------------------------- login
 
-  if (loginbool == false) {
+  //  if (loginbool == false) {
+  //
+  //    result = sendRequest(F("studenthome.hku.nl"),
+  //                         F("/~sophie.vandersijp/kernmodule4/login.php?thingID=1&pass=12345"),
+  //                         response);
+  //
+  //    if (result == 1) {
+  //
+  //      String login = getBody(response);
+  //      Serial.println(F("login"));                                     // kan weg
+  //      // Serial.println (login);                                            // kan weg
+  //
+  //      //      if (login == 0) {
+  //      //        loginbool = false;
+  //      //        //Serial.println("login error");
+  //      //      }
+  //
+  //      if (login != F("0")) {
+  //        loginbool = true;
+  //      }
+  //
+  //
+  //
+  //      if (loginbool == true) {
 
-    result = sendRequest(F("studenthome.hku.nl"),
-                         F("/~sophie.vandersijp/kernmodule4/login.php?thingID=1&pass=12345"),
-                         response);
 
-    if (result == 1) {
+  //------------------------------------------------------------------------------------- is it go time
 
-      String login = getBody(response);
-      Serial.println(F("login"));                                     // kan weg
-      // Serial.println (login);                                            // kan weg
+  // lezen van server
+  result = sendRequest (F("studenthome.hku.nl"),
+                        F("/~sophie.vandersijp/kernmodule4/dispensetime.php"),
+                        response);
 
-      //      if (login == 0) {
-      //        loginbool = false;
-      //        //Serial.println("login error");
-      //      }
+  if (result == 1) {
+    Serial.println(F("is it go time?"));
 
-      if (login != F("0")) {
-        loginbool = true;
+    String goTime = getBody(response);
+    // Serial.println(goTime);
+
+
+
+    if (goTime == F("its GOTIME")) {
+
+      goTimeFlag = true;
+      Serial.println(F("Go!"));
+      // Serial.println(client.available());
+
+    }
+
+
+    if (goTimeFlag) {
+      if (sensorState == LOW) {
+
+        //LED on
+        digitalWrite(LEDPIN, HIGH);
+        digitalWrite(LEDRED, 0);
+        digitalWrite(LEDBLUE, 0);
+        digitalWrite(LEDGREEN, 0);
+
       }
 
 
+      //------------------------------------------------------------------------------------- has pill been taken
 
-      if (loginbool == true) {
+      result = sendRequest (F("studenthome.hku.nl"),
+                            F("/~sophie.vandersijp/kernmodule4/worry.php"),
+                            response);
+
+      if (result == 1) {
+
+        String woTime = getBody(response);
+        Serial.println(F("should I be worried"));
+
+        if (woTime == F("its WOTIME")) {
+          woTimeFlag = true;
+          Serial.println(F("worry"));
+        }
+
+        if (woTimeFlag) {
+
+          digitalWrite(LEDRED, 0);
+          digitalWrite(LEDBLUE, 255);
+          digitalWrite(LEDGREEN, 255);
+
+          woTimeFlag = false;
+        }
 
 
-        //------------------------------------------------------------------------------------- is it go time
 
-        // lezen van server
+        //------------------------------------------------------------------------------------- pill has been taken
         result = sendRequest (F("studenthome.hku.nl"),
-                              F("/~sophie.vandersijp/kernmodule4/dispensetime.php"),
+                              F("/~sophie.vandersijp/kernmodule4/unbroken_insert.php?thingID=1&pillID=1"),
                               response);
 
         if (result == 1) {
-          Serial.println(F("is it go time?"));
-
-          String goTime = getBody(response);
-          // Serial.println(goTime);
 
 
+          //sensorState = LOW;
 
-          if (goTime == F("its GOTIME")) {
+          if (sensorState == HIGH) {
 
-            goTimeFlag = true;
-            Serial.println(F("Go!"));
-           // Serial.println(client.available());
+            digitalWrite(LEDRED, 255);
+            digitalWrite(LEDBLUE, 255);
+            digitalWrite(LEDGREEN, 255);
 
           }
 
-
-          if (goTimeFlag) {
-
-            //LED on
-            digitalWrite(LEDPIN, HIGH);
-            digitalWrite(LEDRED, 0);
-            digitalWrite(LEDBLUE, 0);
-            digitalWrite(LEDGREEN, 0);
-
-
-            //------------------------------------------------------------------------------------- has pill been taken
-
-            result = sendRequest (F("studenthome.hku.nl"),
-                                  F("/~sophie.vandersijp/kernmodule4/worry.php"),
-                                  response);
-
-            if (result == 1) {
-
-              String woTime = getBody(response);
-              //Serial.println(woTime);
-
-              if (woTime == F("its WOTIME")) {
-                woTimeFlag = true;
-                Serial.println(F("worry"));
-              }
-
-              if (woTimeFlag) {
-
-                digitalWrite(LEDRED, 0);
-                digitalWrite(LEDBLUE, 255);
-                digitalWrite(LEDGREEN, 255);
-
-                woTimeFlag = false;
-              }
-
-
-
-              //------------------------------------------------------------------------------------- pill has been taken
-              result = sendRequest (F("studenthome.hku.nl"),
-                                    F("/~sophie.vandersijp/kernmodule4/unbroken_insert.php?thingID=1&pillID=1"),
-                                    response);
-
-              if (result == 1) {
-
-
-                //sensorState = LOW;
-
-                if (sensorState == HIGH) {
-
-                  digitalWrite(LEDRED, 255);
-                  digitalWrite(LEDBLUE, 255);
-                  digitalWrite(LEDGREEN, 255);
-
-                }
-                goTimeFlag = false;
-                //-------------------------------------------------------------------------------------
-              }
-            } // if result == 1
-          } // if gotime flag
-        } // if result == 1 / login
-      } // if result == 1 / gotime
-    } // end goTime loop
-  } // end login else loop
+          goTimeFlag = false;
+          //-------------------------------------------------------------------------------------
+        }
+      } // if result == 1
+    } // if gotime flag
+  } // if result == 1 / login
+  //     } // if result == 1 / gotime
+  //   } // end goTime loop
+  // } // end login else loop
 
 
 
 
-  delay(4000);
+  delay(1000);
 
 
 } // loop
