@@ -1,0 +1,42 @@
+<?php include "include.php";
+
+// take dispense time format(UNIX) for pill 1
+$query = 
+"SELECT UNIX_TIMESTAMP(p.dispenseTime)
+FROM pill p LEFT JOIN data3 d
+ON (p.id=d.pillID)
+WHERE d.thingID=1
+";
+
+// make variable of "now" format(UNIX)
+$NOW = time();
+
+
+if (!($result = $mysqli->query($query)))
+showerror($mysqli->errno,$mysqli->error);
+
+// when dispense time is smaller than NOW (meaning it is in the past), print GOGOGO
+while($row = $result->fetch_assoc())
+{
+	if ($row['UNIX_TIMESTAMP(p.dispenseTime)'] <= $NOW) {
+		echo "its GOTIME<br>";
+		
+	}
+
+	else {
+		echo "no";
+	}
+	
+//print dispense time & time now in UNIX
+	//echo $row['UNIX_TIMESTAMP(p.dispenseTime)'] . "</br>";
+	//echo $NOW;
+	
+
+}
+
+
+
+
+
+
+?>

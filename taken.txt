@@ -1,0 +1,42 @@
+<?php include "include.php";
+
+//session_start();
+
+//$var_pill = $_GET ["pill"];
+
+// take dispense time format(UNIX) for pill 1
+$query1 = 
+"SELECT UNIX_TIMESTAMP(p.dispenseTime)
+FROM pill p LEFT JOIN data3 d
+ON (p.id=d.pillID)
+WHERE d.thingID=1
+";
+
+// make variable of "now" format(UNIX)
+$NOW = time();
+
+if (!($result = $mysqli->query($query1)))
+showerror($mysqli->errno,$mysqli->error);
+
+
+// what is the difference between dispense time and time taken
+while($row = $result->fetch_assoc())
+{
+	$var_difference = $row['UNIX_TIMESTAMP(p.dispenseTime)'] - $NOW;
+}
+
+$var_thingID = $_GET["thingID"];
+$var_pillID = $_GET ["pillID"];
+
+// insert gathered data into database
+$query2 = 
+"INSERT INTO data3 (id, thingID, pillID, timetaken, difference) 
+VALUES (NULL, $var_thingID, $var_pillID, NULL, $var_difference)"; 
+
+
+if (!($result = $mysqli->query($query2)))
+showerror($mysqli->errno,$mysqli->error);
+
+
+
+?>

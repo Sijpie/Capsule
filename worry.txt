@@ -1,0 +1,77 @@
+<?php include "include.php";
+
+//session_start();
+
+// take dispense time format(UNIX) for pill 1
+$query1 = 
+"SELECT UNIX_TIMESTAMP(p.dispenseTime)
+FROM pill p LEFT JOIN data3 d
+ON (p.id=d.pillID)
+WHERE d.thingID=1
+";
+
+// make variable of "now" format(UNIX)
+$NOW = time();
+
+if (!($result = $mysqli->query($query1)))
+showerror($mysqli->errno,$mysqli->error);
+
+
+
+// what is the difference between dispense time and time taken
+while($row = $result->fetch_assoc())
+{
+	$var_difference = $row['UNIX_TIMESTAMP(p.dispenseTime)'] - $NOW;
+	//echo $row['pill.dispenseTime'];
+	
+}	
+
+$timestamp=time()+7200;
+	echo gmdate("Y-m-d\TH:i:s\Z", $timestamp);
+	echo "<br>";
+	echo "actual difference = ";
+	echo $var_difference;
+	echo "<br>";
+
+
+// is var_difference < average difference
+// find average difference limited to past 10 entries
+$query2 = 
+"SELECT AVG(difference) AS average
+FROM (SELECT difference
+	FROM data3
+	ORDER BY timetaken
+	LIMIT 10) AS something
+";
+
+if (!($result = $mysqli->query($query2)))
+showerror($mysqli->errno,$mysqli->error);
+
+while($row = $result->fetch_assoc())
+{ 
+	echo "average difference = ";
+	echo $row['average'];
+	echo "<br>";
+	$var_average = $row['average'];
+}
+
+if ($var_difference >= $var_average){
+	echo "fine";
+} else {
+	echo "its WOTIME<br>";
+	echo "its GOTIME<br>";
+	//echo "GOTIME<br>";
+	//$query3
+}
+
+
+
+
+
+
+
+
+
+
+
+?>

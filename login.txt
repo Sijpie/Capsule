@@ -1,0 +1,40 @@
+
+
+<?php include "include.php";
+
+
+session_start();
+
+$var_thingID = $_GET ["thingID"];
+$var_pass = $_GET ["pass"];
+
+$query = "SELECT id from thing WHERE id = $var_thingID AND password = '$var_pass'";
+
+if (!($result = $mysqli->query($query)))
+showerror($mysqli->errno,$mysqli->error);
+//voer query uit
+
+$row = $result->fetch_assoc();
+//haal row uit query
+
+//---------------------------------------
+
+if ($row["id"] == $var_thingID){
+	
+
+$_SESSION["thingID"] = $_GET ["thingID"];
+//maak session aan
+
+echo "its "session_id();
+
+
+}
+
+if ($row["id"]!= $var_thingID)
+echo '0';
+
+
+
+
+?>
+
